@@ -1,10 +1,8 @@
-# SteelkiltSharp
-
-[![.NET CI](https://github.com/tonybierman/steelkilt-sharp/actions/workflows/dotnet.yml/badge.svg)](https://github.com/tonybierman/steelkilt-sharp/actions/workflows/dotnet.yml)
-[![Code Coverage](https://github.com/tonybierman/steelkilt-sharp/actions/workflows/coverage.yml/badge.svg)](https://github.com/tonybierman/steelkilt-sharp/actions/workflows/coverage.yml)
-[![Multi-Platform Build](https://github.com/tonybierman/steelkilt-sharp/actions/workflows/multi-platform.yml/badge.svg)](https://github.com/tonybierman/steelkilt-sharp/actions/workflows/multi-platform.yml)
+# Steelkilt Sharp
 
 A C# implementation of the [Steelkilt](https://github.com/tonybierman/steelkilt) RPG combat system based on the Draft 0.4 RPG ruleset by Pitt Murmann.
+
+[![.NET CI](https://github.com/tonybierman/steelkilt-sharp/actions/workflows/dotnet.yml/badge.svg)](https://github.com/tonybierman/steelkilt-sharp/actions/workflows/dotnet.yml)
 
 ## Overview
 

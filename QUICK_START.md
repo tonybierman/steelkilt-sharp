@@ -1,4 +1,4 @@
-# SteelkiltSharp Quick Start Guide
+# Steelkilt Sharp Quick Start Guide
 
 ## Installation
 
