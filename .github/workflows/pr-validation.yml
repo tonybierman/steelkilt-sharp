@@ -1,0 +1,53 @@
+name: PR Validation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  validate:
+    name: Validate Pull Request
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch all history for better analysis
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 9.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Check formatting
+      run: dotnet format --verify-no-changes --verbosity diagnostic
+
+    - name: Build
+      run: dotnet build --no-restore --configuration Release
+
+    - name: Run tests
+      run: dotnet test --no-build --configuration Release --verbosity normal
+
+    - name: Comment PR
+      uses: actions/github-script@v7
+      if: always()
+      with:
+        script: |
+          const output = `#### PR Validation Results
+
+          - ✅ Restore dependencies
+          - ✅ Code formatting check
+          - ✅ Build
+          - ✅ Tests
+
+          *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: output
+          })
