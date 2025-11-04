@@ -7,12 +7,6 @@ git clone [your-repo-url]
 cd steelkilt_sharp
 ```
 
-## Run Examples
-
-```bash
-./run.sh
-```
-
 ## Basic Usage
 
 ### 1. Create a Character
@@ -240,7 +234,6 @@ int dodgeRoll = character.DodgeRoll();    // Dodge skill + d10 + mods
 
 - See `Examples/Program.cs` for complete working examples
 - Read `README.md` for full documentation
-- Check `BUILDING.md` for build instructions
 
 ## Support
 

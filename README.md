@@ -4,7 +4,7 @@ A C# implementation of the [Steelkilt](https://github.com/tonybierman/steelkilt)
 
 ## Overview
 
-SteelkiltSharp is a comprehensive combat system library for tabletop role-playing games, providing mechanics for character creation, combat resolution, skill progression, and advanced features like magic and ranged combat.
+SteelkiltSharp is a combat system library for tabletop role-playing games, providing mechanics for character creation, combat resolution, skill progression, and advanced features like magic and ranged combat.
 
 ## Features
 
@@ -32,30 +32,6 @@ SteelkiltSharp is a comprehensive combat system library for tabletop role-playin
 ### Prerequisites
 
 - .NET 9.0 SDK or later
-
-### Building
-
-```bash
-dotnet build
-```
-
-### Running Examples
-
-Option 1 - Use the provided script (recommended):
-```bash
-./run.sh
-```
-
-Option 2 - Build then run the executable:
-```bash
-# Clean and build
-find . -type d \( -name "obj" -o -name "bin" \) -exec rm -rf {} + 2>/dev/null
-dotnet build
-dotnet build Examples/SteelkiltSharp.Examples.csproj
-
-# Run the executable
-./Examples/bin/Debug/net9.0/SteelkiltSharp.Examples
-```
 
 ## Usage
 
@@ -112,31 +88,6 @@ var fireball = MagicSystem.Spells.Fireball();
 wizard.Magic.PrepareSpell(fireball);
 
 var result = MagicSystem.CastSpell(wizard, fireball);
-```
-
-## Project Structure
-
-```
-SteelkiltSharp/
-├── Core/
-│   ├── Attributes.cs       # Character attributes
-│   ├── Character.cs        # Character class
-│   ├── Weapon.cs           # Weapon types and impact
-│   ├── Armor.cs            # Armor types and protection
-│   ├── Wounds.cs           # Wound tracking system
-│   ├── Combat.cs           # Combat resolution
-│   ├── CombatResult.cs     # Combat round results
-│   ├── Dice.cs             # Dice rolling utilities
-│   └── DefenseAction.cs    # Defense types
-├── Modules/
-│   ├── SkillSystem.cs      # Skill progression
-│   ├── ExhaustionSystem.cs # Exhaustion mechanics
-│   ├── Maneuvers.cs        # Special combat maneuvers
-│   ├── HitLocation.cs      # Hit location system
-│   ├── RangedCombat.cs     # Ranged combat mechanics
-│   └── MagicSystem.cs      # Magic and spell casting
-└── Examples/
-    └── Program.cs          # Example usage and demonstrations
 ```
 
 ## Combat Mechanics
