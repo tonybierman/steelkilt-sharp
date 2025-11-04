@@ -4,7 +4,7 @@
 
 ```bash
 git clone [your-repo-url]
-cd steelkilt_sharp
+cd steelkilt-sharp
 ```
 
 ## Basic Usage
