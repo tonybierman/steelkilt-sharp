@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Steelkilt\SteelkiltSharp.csproj" />
+    <ProjectReference Include="..\SteelkiltSharp.Examples\SteelkiltSharp.Examples.csproj" />
   </ItemGroup>
 
 </Project>
