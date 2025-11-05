@@ -2,8 +2,6 @@
 
 A C# implementation of the [Steelkilt](https://github.com/tonybierman/steelkilt) RPG combat system based on the Draft 0.4 RPG ruleset by Pitt Murmann.
 
-[![.NET CI](https://github.com/tonybierman/steelkilt-sharp/actions/workflows/dotnet.yml/badge.svg)](https://github.com/tonybierman/steelkilt-sharp/actions/workflows/dotnet.yml)
-
 ## Overview
 
 SteelkiltSharp is a combat system library for tabletop role-playing games, providing mechanics for character creation, combat resolution, skill progression, and advanced features like magic and ranged combat.
@@ -30,10 +28,6 @@ SteelkiltSharp is a combat system library for tabletop role-playing games, provi
 - **Magic System**: Nine magical branches with spell preparation, casting rolls, and magical exhaustion
 
 ## Getting Started
-
-### Prerequisites
-
-- .NET 9.0 SDK or later
 
 ## Usage
 
