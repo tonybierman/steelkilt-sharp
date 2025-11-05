@@ -1,3 +1,6 @@
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+
 namespace SteelkiltSharp.Core;
 
 /// <summary>
@@ -16,17 +19,37 @@ public enum WoundLevel
 /// - 3 Severe wounds convert to 1 Critical wound
 /// - 2+ Critical wounds result in death
 /// </summary>
-public class Wounds
+public class Wounds : INotifyPropertyChanged
 {
-    public int Light { get; private set; }
-    public int Severe { get; private set; }
-    public int Critical { get; private set; }
+    private int _light;
+    private int _severe;
+    private int _critical;
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public int Light
+    {
+        get => _light;
+        private set => SetProperty(ref _light, value);
+    }
+
+    public int Severe
+    {
+        get => _severe;
+        private set => SetProperty(ref _severe, value);
+    }
+
+    public int Critical
+    {
+        get => _critical;
+        private set => SetProperty(ref _critical, value);
+    }
 
     public Wounds()
     {
-        Light = 0;
-        Severe = 0;
-        Critical = 0;
+        _light = 0;
+        _severe = 0;
+        _critical = 0;
     }
 
     /// <summary>
@@ -95,6 +118,26 @@ public class Wounds
             penalty += Critical * 4;
             return -penalty;
         }
+    }
+
+    /// <summary>
+    /// Sets a property and raises PropertyChanged event if value changed
+    /// </summary>
+    private void SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = "")
+    {
+        if (!EqualityComparer<T>.Default.Equals(field, value))
+        {
+            field = value;
+            OnPropertyChanged(propertyName);
+        }
+    }
+
+    /// <summary>
+    /// Raises the PropertyChanged event
+    /// </summary>
+    private void OnPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     public override string ToString()

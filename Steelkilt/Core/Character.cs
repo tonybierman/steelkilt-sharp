@@ -1,25 +1,95 @@
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using SteelkiltSharp.Modules;
 
 namespace SteelkiltSharp.Core;
 
 /// <summary>
-/// Represents a combatant in the Draft RPG system
+/// Represents a combatant in the Draft RPG system with UI data-binding support.
+/// Automatically propagates child object property changes to enable proper UI re-rendering.
 /// </summary>
-public class Character
+public class Character : INotifyPropertyChanged
 {
-    public string Name { get; set; }
-    public Attributes Attributes { get; set; }
-    public int WeaponSkill { get; set; }
-    public int DodgeSkill { get; set; }
-    public Weapon Weapon { get; set; }
-    public Armor Armor { get; set; }
-    public Wounds Wounds { get; set; }
+    private string _name;
+    private Attributes _attributes;
+    private int _weaponSkill;
+    private int _dodgeSkill;
+    private Weapon _weapon;
+    private Armor _armor;
+    private Wounds _wounds;
+    private MagicUser? _magic;
+    private RangedWeapon? _rangedWeapon;
+    private int? _rangedSkill;
+    private int _exhaustion;
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public string Name
+    {
+        get => _name;
+        set => SetProperty(ref _name, value);
+    }
+
+    public Attributes Attributes
+    {
+        get => _attributes;
+        set => SetChildProperty(ref _attributes, value);
+    }
+
+    public int WeaponSkill
+    {
+        get => _weaponSkill;
+        set => SetProperty(ref _weaponSkill, ClampSkill(value));
+    }
+
+    public int DodgeSkill
+    {
+        get => _dodgeSkill;
+        set => SetProperty(ref _dodgeSkill, ClampSkill(value));
+    }
+
+    public Weapon Weapon
+    {
+        get => _weapon;
+        set => SetChildProperty(ref _weapon, value);
+    }
+
+    public Armor Armor
+    {
+        get => _armor;
+        set => SetChildProperty(ref _armor, value);
+    }
+
+    public Wounds Wounds
+    {
+        get => _wounds;
+        set => SetChildProperty(ref _wounds, value);
+    }
 
     // Optional advanced features
-    public MagicUser? Magic { get; set; }
-    public RangedWeapon? RangedWeapon { get; set; }
-    public int? RangedSkill { get; set; }
-    public int Exhaustion { get; set; }
+    public MagicUser? Magic
+    {
+        get => _magic;
+        set => SetChildProperty(ref _magic, value);
+    }
+
+    public RangedWeapon? RangedWeapon
+    {
+        get => _rangedWeapon;
+        set => SetChildProperty(ref _rangedWeapon, value);
+    }
+
+    public int? RangedSkill
+    {
+        get => _rangedSkill;
+        set => SetProperty(ref _rangedSkill, value);
+    }
+
+    public int Exhaustion
+    {
+        get => _exhaustion;
+        set => SetProperty(ref _exhaustion, value);
+    }
 
     public Character(
         string name,
@@ -29,14 +99,16 @@ public class Character
         Weapon weapon,
         Armor armor)
     {
-        Name = name;
+        _name = name;
+        _weaponSkill = ClampSkill(weaponSkill);
+        _dodgeSkill = ClampSkill(dodgeSkill);
+        _exhaustion = 0;
+
+        // Set child objects using the property setters to enable subscription
         Attributes = attributes;
-        WeaponSkill = ClampSkill(weaponSkill);
-        DodgeSkill = ClampSkill(dodgeSkill);
         Weapon = weapon;
         Armor = armor;
         Wounds = new Wounds();
-        Exhaustion = 0;
     }
 
     /// <summary>
@@ -103,6 +175,86 @@ public class Character
     private static int ClampSkill(int skill)
     {
         return Math.Max(0, Math.Min(10, skill));
+    }
+
+    /// <summary>
+    /// Sets a property and raises PropertyChanged event if value changed
+    /// </summary>
+    private void SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = "")
+    {
+        if (!EqualityComparer<T>.Default.Equals(field, value))
+        {
+            field = value;
+            OnPropertyChanged(propertyName);
+        }
+    }
+
+    /// <summary>
+    /// Sets a child object property and subscribes to its PropertyChanged events.
+    /// Child property changes automatically propagate up to the parent.
+    /// </summary>
+    private void SetChildProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = "")
+        where T : INotifyPropertyChanged
+    {
+        if (!EqualityComparer<T>.Default.Equals(field, value))
+        {
+            // Unsubscribe from old child object
+            if (field != null)
+            {
+                field.PropertyChanged -= OnChildPropertyChanged;
+            }
+
+            field = value;
+
+            // Subscribe to new child object
+            if (field != null)
+            {
+                field.PropertyChanged += OnChildPropertyChanged;
+            }
+
+            OnPropertyChanged(propertyName);
+        }
+    }
+
+    /// <summary>
+    /// Handles PropertyChanged events from child objects and propagates them up.
+    /// This ensures UI re-renders when child properties change.
+    /// </summary>
+    private void OnChildPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        // Determine which child object changed and propagate the change
+        if (sender == _attributes)
+        {
+            OnPropertyChanged(nameof(Attributes));
+        }
+        else if (sender == _weapon)
+        {
+            OnPropertyChanged(nameof(Weapon));
+        }
+        else if (sender == _armor)
+        {
+            OnPropertyChanged(nameof(Armor));
+        }
+        else if (sender == _wounds)
+        {
+            OnPropertyChanged(nameof(Wounds));
+        }
+        else if (sender == _magic)
+        {
+            OnPropertyChanged(nameof(Magic));
+        }
+        else if (sender == _rangedWeapon)
+        {
+            OnPropertyChanged(nameof(RangedWeapon));
+        }
+    }
+
+    /// <summary>
+    /// Raises the PropertyChanged event
+    /// </summary>
+    private void OnPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     public override string ToString()

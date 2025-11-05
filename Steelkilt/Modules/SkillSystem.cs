@@ -1,3 +1,6 @@
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+
 namespace SteelkiltSharp.Modules;
 
 /// <summary>
@@ -12,19 +15,39 @@ public enum SkillDifficulty
 }
 
 /// <summary>
-/// Represents a learnable skill with progression mechanics
+/// Represents a learnable skill with progression mechanics and UI data-binding support
 /// </summary>
-public class Skill
+public class Skill : INotifyPropertyChanged
 {
-    public string Name { get; set; }
-    public SkillDifficulty Difficulty { get; set; }
-    public int Level { get; set; }
+    private string _name;
+    private SkillDifficulty _difficulty;
+    private int _level;
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public string Name
+    {
+        get => _name;
+        set => SetProperty(ref _name, value);
+    }
+
+    public SkillDifficulty Difficulty
+    {
+        get => _difficulty;
+        set => SetProperty(ref _difficulty, value);
+    }
+
+    public int Level
+    {
+        get => _level;
+        set => SetProperty(ref _level, Math.Max(0, Math.Min(10, value)));
+    }
 
     public Skill(string name, SkillDifficulty difficulty, int level = 0)
     {
-        Name = name;
-        Difficulty = difficulty;
-        Level = Math.Max(0, Math.Min(10, level));
+        _name = name;
+        _difficulty = difficulty;
+        _level = Math.Max(0, Math.Min(10, level));
     }
 
     /// <summary>
@@ -52,6 +75,26 @@ public class Skill
         if (Level >= 10) return false;
         Level++;
         return true;
+    }
+
+    /// <summary>
+    /// Sets a property and raises PropertyChanged event if value changed
+    /// </summary>
+    private void SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = "")
+    {
+        if (!EqualityComparer<T>.Default.Equals(field, value))
+        {
+            field = value;
+            OnPropertyChanged(propertyName);
+        }
+    }
+
+    /// <summary>
+    /// Raises the PropertyChanged event
+    /// </summary>
+    private void OnPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     public override string ToString()

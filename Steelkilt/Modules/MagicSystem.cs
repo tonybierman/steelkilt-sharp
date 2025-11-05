@@ -1,3 +1,5 @@
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using SteelkiltSharp.Core;
 
 namespace SteelkiltSharp.Modules;
@@ -31,52 +33,130 @@ public enum SpellLevel
 }
 
 /// <summary>
-/// Represents a magical spell
+/// Represents a magical spell with UI data-binding support
 /// </summary>
-public class Spell
+public class Spell : INotifyPropertyChanged
 {
-    public string Name { get; set; }
-    public MagicBranch Branch { get; set; }
-    public SpellLevel Level { get; set; }
-    public int CastingTime { get; set; } // in rounds
-    public int ExhaustionCost { get; set; }
-    public string Description { get; set; }
+    private string _name;
+    private MagicBranch _branch;
+    private SpellLevel _level;
+    private int _castingTime;
+    private int _exhaustionCost;
+    private string _description;
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public string Name
+    {
+        get => _name;
+        set => SetProperty(ref _name, value);
+    }
+
+    public MagicBranch Branch
+    {
+        get => _branch;
+        set => SetProperty(ref _branch, value);
+    }
+
+    public SpellLevel Level
+    {
+        get => _level;
+        set => SetProperty(ref _level, value);
+    }
+
+    public int CastingTime
+    {
+        get => _castingTime;
+        set => SetProperty(ref _castingTime, value);
+    }
+
+    public int ExhaustionCost
+    {
+        get => _exhaustionCost;
+        set => SetProperty(ref _exhaustionCost, value);
+    }
+
+    public string Description
+    {
+        get => _description;
+        set => SetProperty(ref _description, value);
+    }
 
     public Spell(string name, MagicBranch branch, SpellLevel level, int castingTime, int exhaustionCost, string description)
     {
-        Name = name;
-        Branch = branch;
-        Level = level;
-        CastingTime = castingTime;
-        ExhaustionCost = exhaustionCost;
-        Description = description;
+        _name = name;
+        _branch = branch;
+        _level = level;
+        _castingTime = castingTime;
+        _exhaustionCost = exhaustionCost;
+        _description = description;
     }
 
     /// <summary>
     /// Calculates the difficulty class for casting this spell
     /// </summary>
     public int DifficultyClass => 10 + ((int)Level * 2);
+
+    /// <summary>
+    /// Sets a property and raises PropertyChanged event if value changed
+    /// </summary>
+    private void SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = "")
+    {
+        if (!EqualityComparer<T>.Default.Equals(field, value))
+        {
+            field = value;
+            OnPropertyChanged(propertyName);
+        }
+    }
+
+    /// <summary>
+    /// Raises the PropertyChanged event
+    /// </summary>
+    private void OnPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
 }
 
 /// <summary>
-/// Represents a character's magical abilities
+/// Represents a character's magical abilities with UI data-binding support
 /// </summary>
-public class MagicUser
+public class MagicUser : INotifyPropertyChanged
 {
-    public Dictionary<MagicBranch, int> BranchSkills { get; set; }
-    public List<Spell> PreparedSpells { get; set; }
-    public int MagicalExhaustion { get; set; }
+    private Dictionary<MagicBranch, int> _branchSkills;
+    private List<Spell> _preparedSpells;
+    private int _magicalExhaustion;
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public Dictionary<MagicBranch, int> BranchSkills
+    {
+        get => _branchSkills;
+        set => SetProperty(ref _branchSkills, value);
+    }
+
+    public List<Spell> PreparedSpells
+    {
+        get => _preparedSpells;
+        set => SetProperty(ref _preparedSpells, value);
+    }
+
+    public int MagicalExhaustion
+    {
+        get => _magicalExhaustion;
+        set => SetProperty(ref _magicalExhaustion, value);
+    }
 
     public MagicUser()
     {
-        BranchSkills = new Dictionary<MagicBranch, int>();
-        PreparedSpells = new List<Spell>();
-        MagicalExhaustion = 0;
+        _branchSkills = new Dictionary<MagicBranch, int>();
+        _preparedSpells = new List<Spell>();
+        _magicalExhaustion = 0;
 
         // Initialize all branches to 0
         foreach (MagicBranch branch in Enum.GetValues<MagicBranch>())
         {
-            BranchSkills[branch] = 0;
+            _branchSkills[branch] = 0;
         }
     }
 
@@ -86,6 +166,7 @@ public class MagicUser
     public void SetBranchSkill(MagicBranch branch, int skill)
     {
         BranchSkills[branch] = Math.Max(0, Math.Min(10, skill));
+        OnPropertyChanged(nameof(BranchSkills));
     }
 
     /// <summary>
@@ -104,32 +185,117 @@ public class MagicUser
         if (!PreparedSpells.Contains(spell))
         {
             PreparedSpells.Add(spell);
+            OnPropertyChanged(nameof(PreparedSpells));
         }
+    }
+
+    /// <summary>
+    /// Sets a property and raises PropertyChanged event if value changed
+    /// </summary>
+    private void SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = "")
+    {
+        if (!EqualityComparer<T>.Default.Equals(field, value))
+        {
+            field = value;
+            OnPropertyChanged(propertyName);
+        }
+    }
+
+    /// <summary>
+    /// Raises the PropertyChanged event
+    /// </summary>
+    private void OnPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
 
 /// <summary>
-/// Result of a spell casting attempt
+/// Result of a spell casting attempt with UI data-binding support
 /// </summary>
-public class SpellCastResult
+public class SpellCastResult : INotifyPropertyChanged
 {
-    public string CasterName { get; set; }
-    public Spell Spell { get; set; }
-    public int CastingRoll { get; set; }
-    public int DifficultyClass { get; set; }
-    public bool Success { get; set; }
-    public int ExhaustionGained { get; set; }
-    public string Message { get; set; }
+    private string _casterName;
+    private Spell _spell;
+    private int _castingRoll;
+    private int _difficultyClass;
+    private bool _success;
+    private int _exhaustionGained;
+    private string _message;
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public string CasterName
+    {
+        get => _casterName;
+        set => SetProperty(ref _casterName, value);
+    }
+
+    public Spell Spell
+    {
+        get => _spell;
+        set => SetProperty(ref _spell, value);
+    }
+
+    public int CastingRoll
+    {
+        get => _castingRoll;
+        set => SetProperty(ref _castingRoll, value);
+    }
+
+    public int DifficultyClass
+    {
+        get => _difficultyClass;
+        set => SetProperty(ref _difficultyClass, value);
+    }
+
+    public bool Success
+    {
+        get => _success;
+        set => SetProperty(ref _success, value);
+    }
+
+    public int ExhaustionGained
+    {
+        get => _exhaustionGained;
+        set => SetProperty(ref _exhaustionGained, value);
+    }
+
+    public string Message
+    {
+        get => _message;
+        set => SetProperty(ref _message, value);
+    }
 
     public SpellCastResult(string casterName, Spell spell, int castingRoll, int difficultyClass, bool success, int exhaustionGained, string message)
     {
-        CasterName = casterName;
-        Spell = spell;
-        CastingRoll = castingRoll;
-        DifficultyClass = difficultyClass;
-        Success = success;
-        ExhaustionGained = exhaustionGained;
-        Message = message;
+        _casterName = casterName;
+        _spell = spell;
+        _castingRoll = castingRoll;
+        _difficultyClass = difficultyClass;
+        _success = success;
+        _exhaustionGained = exhaustionGained;
+        _message = message;
+    }
+
+    /// <summary>
+    /// Sets a property and raises PropertyChanged event if value changed
+    /// </summary>
+    private void SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = "")
+    {
+        if (!EqualityComparer<T>.Default.Equals(field, value))
+        {
+            field = value;
+            OnPropertyChanged(propertyName);
+        }
+    }
+
+    /// <summary>
+    /// Raises the PropertyChanged event
+    /// </summary>
+    private void OnPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     public override string ToString()

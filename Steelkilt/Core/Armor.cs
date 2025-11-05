@@ -1,3 +1,6 @@
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+
 namespace SteelkiltSharp.Core;
 
 /// <summary>
@@ -15,19 +18,45 @@ public enum ArmorType
 /// <summary>
 /// Represents armor with protection and movement penalty
 /// </summary>
-public class Armor
+public class Armor : INotifyPropertyChanged
 {
-    public string Name { get; set; }
-    public ArmorType ArmorType { get; set; }
-    public int Protection { get; set; }
-    public int MovementPenalty { get; set; }
+    private string _name;
+    private ArmorType _armorType;
+    private int _protection;
+    private int _movementPenalty;
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public string Name
+    {
+        get => _name;
+        set => SetProperty(ref _name, value);
+    }
+
+    public ArmorType ArmorType
+    {
+        get => _armorType;
+        set => SetProperty(ref _armorType, value);
+    }
+
+    public int Protection
+    {
+        get => _protection;
+        set => SetProperty(ref _protection, value);
+    }
+
+    public int MovementPenalty
+    {
+        get => _movementPenalty;
+        set => SetProperty(ref _movementPenalty, value);
+    }
 
     public Armor(string name, ArmorType armorType, int protection, int movementPenalty)
     {
-        Name = name;
-        ArmorType = armorType;
-        Protection = protection;
-        MovementPenalty = movementPenalty;
+        _name = name;
+        _armorType = armorType;
+        _protection = protection;
+        _movementPenalty = movementPenalty;
     }
 
     /// <summary>
@@ -59,4 +88,24 @@ public class Armor
     /// Creates full plate armor
     /// </summary>
     public static Armor FullPlate() => new("Full Plate", ArmorType.FullPlate, 5, -3);
+
+    /// <summary>
+    /// Sets a property and raises PropertyChanged event if value changed
+    /// </summary>
+    private void SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = "")
+    {
+        if (!EqualityComparer<T>.Default.Equals(field, value))
+        {
+            field = value;
+            OnPropertyChanged(propertyName);
+        }
+    }
+
+    /// <summary>
+    /// Raises the PropertyChanged event
+    /// </summary>
+    private void OnPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
 }

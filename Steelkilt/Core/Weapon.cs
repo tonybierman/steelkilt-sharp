@@ -1,3 +1,6 @@
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+
 namespace SteelkiltSharp.Core;
 
 /// <summary>
@@ -14,10 +17,24 @@ public enum WeaponImpact
 /// <summary>
 /// Represents a weapon with its combat characteristics
 /// </summary>
-public class Weapon
+public class Weapon : INotifyPropertyChanged
 {
-    public string Name { get; set; }
-    public WeaponImpact Impact { get; set; }
+    private string _name;
+    private WeaponImpact _impact;
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public string Name
+    {
+        get => _name;
+        set => SetProperty(ref _name, value);
+    }
+
+    public WeaponImpact Impact
+    {
+        get => _impact;
+        set => SetProperty(ref _impact, value);
+    }
 
     /// <summary>
     /// Base damage calculated as (impact × 2) + 1
@@ -26,8 +43,8 @@ public class Weapon
 
     public Weapon(string name, WeaponImpact impact)
     {
-        Name = name;
-        Impact = impact;
+        _name = name;
+        _impact = impact;
     }
 
     /// <summary>
@@ -49,4 +66,24 @@ public class Weapon
     /// Creates a great axe (Huge impact)
     /// </summary>
     public static Weapon GreatAxe() => new("Great Axe", WeaponImpact.Huge);
+
+    /// <summary>
+    /// Sets a property and raises PropertyChanged event if value changed
+    /// </summary>
+    private void SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = "")
+    {
+        if (!EqualityComparer<T>.Default.Equals(field, value))
+        {
+            field = value;
+            OnPropertyChanged(propertyName);
+        }
+    }
+
+    /// <summary>
+    /// Raises the PropertyChanged event
+    /// </summary>
+    private void OnPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
 }

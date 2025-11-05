@@ -1,3 +1,5 @@
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using SteelkiltSharp.Core;
 
 namespace SteelkiltSharp.Modules;
@@ -13,31 +15,89 @@ public enum RangedWeaponType
 }
 
 /// <summary>
-/// Represents a ranged weapon with its characteristics
+/// Represents a ranged weapon with its characteristics and UI data-binding support
 /// </summary>
-public class RangedWeapon
+public class RangedWeapon : INotifyPropertyChanged
 {
-    public string Name { get; set; }
-    public RangedWeaponType Type { get; set; }
-    public int Damage { get; set; }
-    public int ShortRange { get; set; }
-    public int MediumRange { get; set; }
-    public int LongRange { get; set; }
+    private string _name;
+    private RangedWeaponType _type;
+    private int _damage;
+    private int _shortRange;
+    private int _mediumRange;
+    private int _longRange;
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public string Name
+    {
+        get => _name;
+        set => SetProperty(ref _name, value);
+    }
+
+    public RangedWeaponType Type
+    {
+        get => _type;
+        set => SetProperty(ref _type, value);
+    }
+
+    public int Damage
+    {
+        get => _damage;
+        set => SetProperty(ref _damage, value);
+    }
+
+    public int ShortRange
+    {
+        get => _shortRange;
+        set => SetProperty(ref _shortRange, value);
+    }
+
+    public int MediumRange
+    {
+        get => _mediumRange;
+        set => SetProperty(ref _mediumRange, value);
+    }
+
+    public int LongRange
+    {
+        get => _longRange;
+        set => SetProperty(ref _longRange, value);
+    }
 
     public RangedWeapon(string name, RangedWeaponType type, int damage, int shortRange, int mediumRange, int longRange)
     {
-        Name = name;
-        Type = type;
-        Damage = damage;
-        ShortRange = shortRange;
-        MediumRange = mediumRange;
-        LongRange = longRange;
+        _name = name;
+        _type = type;
+        _damage = damage;
+        _shortRange = shortRange;
+        _mediumRange = mediumRange;
+        _longRange = longRange;
     }
 
     public static RangedWeapon ShortBow() => new("Short Bow", RangedWeaponType.Bow, 4, 30, 60, 150);
     public static RangedWeapon LongBow() => new("Long Bow", RangedWeaponType.Bow, 6, 50, 100, 250);
     public static RangedWeapon LightCrossbow() => new("Light Crossbow", RangedWeaponType.Crossbow, 5, 40, 80, 200);
     public static RangedWeapon HeavyCrossbow() => new("Heavy Crossbow", RangedWeaponType.Crossbow, 8, 50, 100, 250);
+
+    /// <summary>
+    /// Sets a property and raises PropertyChanged event if value changed
+    /// </summary>
+    private void SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = "")
+    {
+        if (!EqualityComparer<T>.Default.Equals(field, value))
+        {
+            field = value;
+            OnPropertyChanged(propertyName);
+        }
+    }
+
+    /// <summary>
+    /// Raises the PropertyChanged event
+    /// </summary>
+    private void OnPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
 }
 
 /// <summary>
@@ -53,19 +113,75 @@ public enum RangeCategory
 }
 
 /// <summary>
-/// Result of a ranged attack
+/// Result of a ranged attack with UI data-binding support
 /// </summary>
-public class RangedCombatResult
+public class RangedCombatResult : INotifyPropertyChanged
 {
-    public string Attacker { get; set; }
-    public string Defender { get; set; }
-    public int AttackRoll { get; set; }
-    public int DefenseRoll { get; set; }
-    public RangeCategory Range { get; set; }
-    public bool Hit { get; set; }
-    public int Damage { get; set; }
-    public WoundLevel? WoundLevel { get; set; }
-    public bool DefenderDied { get; set; }
+    private string _attacker;
+    private string _defender;
+    private int _attackRoll;
+    private int _defenseRoll;
+    private RangeCategory _range;
+    private bool _hit;
+    private int _damage;
+    private WoundLevel? _woundLevel;
+    private bool _defenderDied;
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public string Attacker
+    {
+        get => _attacker;
+        set => SetProperty(ref _attacker, value);
+    }
+
+    public string Defender
+    {
+        get => _defender;
+        set => SetProperty(ref _defender, value);
+    }
+
+    public int AttackRoll
+    {
+        get => _attackRoll;
+        set => SetProperty(ref _attackRoll, value);
+    }
+
+    public int DefenseRoll
+    {
+        get => _defenseRoll;
+        set => SetProperty(ref _defenseRoll, value);
+    }
+
+    public RangeCategory Range
+    {
+        get => _range;
+        set => SetProperty(ref _range, value);
+    }
+
+    public bool Hit
+    {
+        get => _hit;
+        set => SetProperty(ref _hit, value);
+    }
+
+    public int Damage
+    {
+        get => _damage;
+        set => SetProperty(ref _damage, value);
+    }
+
+    public WoundLevel? WoundLevel
+    {
+        get => _woundLevel;
+        set => SetProperty(ref _woundLevel, value);
+    }
+
+    public bool DefenderDied
+    {
+        get => _defenderDied;
+        set => SetProperty(ref _defenderDied, value);
+    }
 
     public RangedCombatResult(
         string attacker,
@@ -78,15 +194,35 @@ public class RangedCombatResult
         WoundLevel? woundLevel,
         bool defenderDied)
     {
-        Attacker = attacker;
-        Defender = defender;
-        AttackRoll = attackRoll;
-        DefenseRoll = defenseRoll;
-        Range = range;
-        Hit = hit;
-        Damage = damage;
-        WoundLevel = woundLevel;
-        DefenderDied = defenderDied;
+        _attacker = attacker;
+        _defender = defender;
+        _attackRoll = attackRoll;
+        _defenseRoll = defenseRoll;
+        _range = range;
+        _hit = hit;
+        _damage = damage;
+        _woundLevel = woundLevel;
+        _defenderDied = defenderDied;
+    }
+
+    /// <summary>
+    /// Sets a property and raises PropertyChanged event if value changed
+    /// </summary>
+    private void SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = "")
+    {
+        if (!EqualityComparer<T>.Default.Equals(field, value))
+        {
+            field = value;
+            OnPropertyChanged(propertyName);
+        }
+    }
+
+    /// <summary>
+    /// Raises the PropertyChanged event
+    /// </summary>
+    private void OnPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     public override string ToString()
