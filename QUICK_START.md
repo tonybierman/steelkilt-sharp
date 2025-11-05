@@ -1,12 +1,5 @@
 # Steelkilt Sharp Quick Start Guide
 
-## Installation
-
-```bash
-git clone [your-repo-url]
-cd steelkilt-sharp
-```
-
 ## Basic Usage
 
 ### 1. Create a Character

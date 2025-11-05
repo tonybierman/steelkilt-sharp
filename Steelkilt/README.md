@@ -1,6 +1,6 @@
 # Steelkilt Sharp
 
-A C# implementation of the [Steelkilt](https://github.com/tonybierman/steelkilt) RPG combat system based on the Draft 0.4 RPG ruleset by Pitt Murmann.
+[Steelkilt Sharp](https://github.com/tonybierman/steelkilt-sharp) is a C# implementation of the [Steelkilt](https://github.com/tonybierman/steelkilt) RPG combat system based on the Draft 0.4 RPG ruleset by Pitt Murmann.
 
 ## Overview
 
@@ -120,25 +120,15 @@ var result = MagicSystem.CastSpell(wizard, fireball);
 8. **Transmutation**: Shape and form alteration
 9. **Abjuration**: Protection and barriers
 
-## Examples
-
-The Examples project includes demonstrations of:
-
-1. Basic melee combat between two warriors
-2. Combat until victory (death)
-3. Ranged combat at various distances
-4. Wizard spell casting with magic system
-5. Advanced features (hit locations, maneuvers, skills, exhaustion)
-
 ## License
 
 This project is released under the MIT License. The original Draft 0.4 RPG Rule Set was published under the OpenContent License Version 1.0.
 
 ## Credits
 
-- Original Steelkilt Rust implementation: [tonybierman/steelkilt](https://github.com/tonybierman/steelkilt)
+- Original Steelkilt Rust implementation on GitHub: [tonybierman/steelkilt](https://github.com/tonybierman/steelkilt)
+- Steelkilt Sharp on GitHib: [tonybierman/steelkilt](https://github.com/tonybierman/steelkilt-sharp)
 - Draft 0.4 RPG System: Pitt Murmann
-- C# Implementation: SteelkiltSharp
 
 ## Contributing
 
