@@ -39,11 +39,11 @@ jobs:
     - name: Run MinVer to determine package version
       run: minver
 
-    # Build & Pack UniversalReportCore
+    # Build & Pack SteelkiltSharp
     - name: Build SteelKiltSharp
-      run: dotnet build steelkilt-sharp --configuration Release
+      run: dotnet build SteelkiltSharp --configuration Release
 
-    - name: Pack UniversalReportCore
+    - name: Pack SteelkiltSharp
       run: dotnet pack Steelkilt --configuration Release --output ${{ env.NuGetDirectory }}
 
     # Debug: List NuGet Packages
