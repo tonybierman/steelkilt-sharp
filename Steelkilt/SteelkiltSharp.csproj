@@ -21,9 +21,8 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<!-- Include PDB files in the NuGet package for symbol support -->
-		<IncludeSymbols>true</IncludeSymbols>
-		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<!-- Include PDB files in the main NuGet package -->
+		<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 	</PropertyGroup>
 
 	<ItemGroup>
