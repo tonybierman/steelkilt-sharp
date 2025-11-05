@@ -1,0 +1,142 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+name: publish
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'main'
+  pull_request:
+    branches:
+      - '*'
+  release:
+    types:
+      - published
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  NuGetDirectory: ${{ github.workspace }}/nuget
+  CoverageReport: ${{ github.workspace }}/coverage
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  create_nuget:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: |
+          9.0.x
+          8.0.x
+
+    - name: Install MinVer
+      run: dotnet tool install --global minver-cli
+
+    - name: Run MinVer to determine package version
+      run: minver
+
+    # Build & Pack SteelkiltSharp
+    - name: Build 
+      run: dotnet build SteelkiltSharp --configuration Release
+
+    - name: Pack SteelkiltSharp
+      run: dotnet pack Steelkilt --configuration Release --output ${{ env.NuGetDirectory }}
+
+    # Debug: List NuGet Packages
+    - name: Debug - List NuGet Files
+      run: ls -la ${{ env.NuGetDirectory }}
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: nuget
+        if-no-files-found: error
+        retention-days: 7
+        path: ${{ env.NuGetDirectory }}/*.nupkg
+
+  validate_nuget:
+    runs-on: ubuntu-latest
+    needs: [ create_nuget ]
+    steps:
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            9.0.x
+            8.0.x
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: nuget
+          path: ${{ env.NuGetDirectory }}
+
+      - name: Install NuGet validator
+        run: dotnet tool update Meziantou.Framework.NuGetPackageValidation.Tool --global
+
+      - name: Validate package
+        run: |
+          Get-ChildItem "${{ env.NuGetDirectory }}/*.nupkg" | ForEach-Object { meziantou.validate-nuget-package $_.FullName }
+
+  run_test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: |
+          9.0.x
+          8.0.x
+
+    - name: Install Coverlet for Code Coverage
+      run: dotnet tool install --global coverlet.console
+
+    - name: Run tests with code coverage
+      run: |
+        dotnet test Tests\SteelkiltSharp.Tests --configuration Release --collect:"XPlat Code Coverage" --results-directory ${{ env.CoverageReport }} 
+
+    - name: Convert Coverage to Cobertura Format
+      run: |
+        dotnet tool install -g dotnet-reportgenerator-globaltool
+        reportgenerator -reports:${{ env.CoverageReport }}/**/coverage.cobertura.xml -targetdir:${{ env.CoverageReport }}/html -reporttypes:Cobertura
+
+    - name: Upload Coverage Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: ${{ env.CoverageReport }}/html
+
+  deploy:
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    needs: [ validate_nuget, run_test ]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: nuget
+          path: ${{ env.NuGetDirectory }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            9.0.x
+            8.0.x
+
+      # Find and Push
+      - name: Publish NuGet package
+        run: |
+          foreach($file in (Get-ChildItem "${{ env.NuGetDirectory }}" -Recurse -Include *.nupkg)) {
+              dotnet nuget push $file --api-key "${{ secrets.NUGET_APIKEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          }
+        shell: pwsh
