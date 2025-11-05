@@ -4,7 +4,7 @@
 
 ## Overview
 
-SteelkiltSharp is a combat system library for tabletop role-playing games, providing mechanics for character creation, combat resolution, skill progression, and advanced features like magic and ranged combat.
+Steelkilt Sharp is a combat system library for role-playing games, providing mechanics for character creation, combat resolution, skill progression, and advanced features like magic and ranged combat.
 
 ## Features
 
