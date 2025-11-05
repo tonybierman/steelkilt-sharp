@@ -38,16 +38,38 @@ jobs:
     - name: Run MinVer to determine package version
       run: minver
 
-    # Build & Pack SteelkiltSharp
+    # Restore & Build & Pack SteelkiltSharp
+    - name: Restore dependencies
+      run: dotnet restore Steelkilt/SteelkiltSharp.csproj
+
     - name: Build SteelKiltSharp
-      run: dotnet build Steelkilt\SteelkiltSharp.csproj --configuration Release
+      run: dotnet build Steelkilt/SteelkiltSharp.csproj --configuration Release --no-restore --verbosity normal
+
+    # Debug: List build output
+    - name: Debug - List build output
+      run: |
+        echo "=== Checking Steelkilt/bin/Release ==="
+        ls -laR Steelkilt/bin/Release/ || echo "Release folder not found"
 
     - name: Pack SteelkiltSharp
-      run: dotnet pack Steelkilt --configuration Release --output ${{ env.NuGetDirectory }}
+      run: dotnet pack Steelkilt/SteelkiltSharp.csproj --configuration Release --output ${{ env.NuGetDirectory }} --no-build
 
     # Debug: List NuGet Packages
     - name: Debug - List NuGet Files
-      run: ls -la ${{ env.NuGetDirectory }}
+      run: |
+        echo "=== Checking NuGet directory ==="
+        ls -laR ${{ env.NuGetDirectory }}
+
+    - name: Debug - Extract and inspect .nupkg
+      run: |
+        cd ${{ env.NuGetDirectory }}
+        foreach($file in (Get-ChildItem "*.nupkg")) {
+          Write-Host "=== Contents of $($file.Name) ==="
+          $null = Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip = [System.IO.Compression.ZipFile]::OpenRead($file.FullName)
+          $zip.Entries | Where-Object { $_.Name -like "*.dll" -or $_.Name -like "*.pdb" } | ForEach-Object { Write-Host $_.FullName }
+          $zip.Dispose()
+        }
 
     - uses: actions/upload-artifact@v4
       with:
@@ -77,7 +99,10 @@ jobs:
 
       - name: Validate package
         run: |
-          Get-ChildItem "${{ env.NuGetDirectory }}/*.nupkg" | ForEach-Object { meziantou.validate-nuget-package $_.FullName }
+          Get-ChildItem "${{ env.NuGetDirectory }}/*.nupkg" | ForEach-Object { 
+            Write-Host "Validating: $($_.Name)"
+            meziantou.validate-nuget-package $_.FullName 
+          }
 
   run_test:
     runs-on: ubuntu-latest
@@ -90,6 +115,12 @@ jobs:
         dotnet-version: |
           9.0.x
           8.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
 
     - name: Install Coverlet for Code Coverage
       run: dotnet tool install --global coverlet.console
