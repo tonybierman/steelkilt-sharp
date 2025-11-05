@@ -23,6 +23,12 @@
 	<PropertyGroup>
 		<!-- Include PDB files in the main NuGet package -->
 		<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+		<!-- Make builds deterministic for consistent PDB files -->
+		<Deterministic>true</Deterministic>
+		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+		<!-- Use source link for reproducible builds -->
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
 	</PropertyGroup>
 
 	<ItemGroup>
