@@ -19,5 +19,7 @@ class Program
         publisher.Subscribe(Console.WriteLine);
 
         ExampleEngine.Run(publisher);
+
+        publisher.Flush();
     }
 }
