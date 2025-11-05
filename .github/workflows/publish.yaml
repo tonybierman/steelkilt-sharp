@@ -11,7 +11,7 @@ on:
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
-  NuGetDirectory: steelkilt-sharp/Steelkilt/nuget
+  NuGetDirectory: /Steelkilt/nuget
 
 defaults:
   run:
