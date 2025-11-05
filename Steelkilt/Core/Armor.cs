@@ -104,7 +104,7 @@ public class Armor : INotifyPropertyChanged
     /// <summary>
     /// Raises the PropertyChanged event
     /// </summary>
-    private void OnPropertyChanged(string propertyName)
+    public void OnPropertyChanged(string propertyName)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
