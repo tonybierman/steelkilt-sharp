@@ -41,7 +41,7 @@ jobs:
 
     # Build & Pack SteelkiltSharp
     - name: Build SteelKiltSharp
-      run: dotnet build SteelkiltSharp --configuration Release
+      run: dotnet build Steelkilt\SteelkiltSharp.csproj --configuration Release
 
     - name: Pack SteelkiltSharp
       run: dotnet pack Steelkilt --configuration Release --output ${{ env.NuGetDirectory }}
