@@ -20,7 +20,7 @@ Write-Host "Packing SteelkiltSharp..."
 dotnet pack Steelkilt --configuration Debug --output $NuGetDirectory /p:Version=$Version
 
 Write-Host "Running tests..."
-dotnet test SteelkiltSharp.Tests.csproj --configuration Debug
+dotnet test Tests\SteelkiltSharp.Tests.csproj --configuration Debug
 
 Write-Host "NuGet Packages are ready in: $NuGetDirectory"
 
