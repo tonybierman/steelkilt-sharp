@@ -11,8 +11,7 @@ on:
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
-  NuGetDirectory: ${{ github.workspace }}/nuget
-  CoverageReport: ${{ github.workspace }}/coverage
+  NuGetDirectory: steelkilt-sharp/Steelkilt/nuget
 
 defaults:
   run:
