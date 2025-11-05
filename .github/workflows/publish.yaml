@@ -96,7 +96,7 @@ jobs:
 
     - name: Run tests with code coverage
       run: |
-        dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage" --results-directory ${{ env.CoverageReport }} 
+        dotnet test --no-build --configuration Release
 
   deploy:
     if: github.event_name == 'release'
