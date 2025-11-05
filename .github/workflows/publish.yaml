@@ -97,7 +97,7 @@ jobs:
 
     - name: Run tests with code coverage
       run: |
-        dotnet test UniversalReportCore.Tests --configuration Release --collect:"XPlat Code Coverage" --results-directory ${{ env.CoverageReport }} 
+        dotnet test --no-build --configuration Release --collect:"XPlat Code Coverage" --results-directory ${{ env.CoverageReport }} 
 
     - name: Convert Coverage to Cobertura Format
       run: |
