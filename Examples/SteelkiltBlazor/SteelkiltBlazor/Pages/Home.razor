@@ -237,27 +237,32 @@
         int i = 0;
         while (true)
         {
+            combatLog.Add($"Round {++i}:");
+
             var d10Roll1 = Dice.D10();
             var d10Roll2 = Dice.D10();
             bool coinFlip = d10Roll1 + combatant1.Attributes.Dexterity > d10Roll2 + combatant2.Attributes.Dexterity;
             Character attacker = coinFlip ? combatant1 : combatant2;
             Character defender = attacker == combatant1 ? combatant2 : combatant1;
 
-
-            var result = Combat.CombatRound(attacker, defender, DefenseAction.Parry);
-            combatLog.Add($"Round {++i}:");
-            combatLog.Add($"{result}");
+            var result1 = Combat.CombatRound(attacker, defender, DefenseAction.Parry);
+            combatLog.Add($"{result1}");
             combatLog.Add($"  {defender.Name} wounds: {defender.Wounds}");
-            combatLog.Add("");
-
-            // Force Blazor to recognize wounds changed
-            attacker.OnPropertyChanged(nameof(Character.Wounds));
             defender.OnPropertyChanged(nameof(Character.Wounds));
-
-            attacker.OnPropertyChanged(nameof(Character.Exhaustion));
             defender.OnPropertyChanged(nameof(Character.Exhaustion));
-
+            combatLog.Add("");
             StateHasChanged();
+
+            if(!defender.IsDead)
+            {
+                var result2 = Combat.CombatRound(defender, attacker, DefenseAction.Parry);
+                combatLog.Add($"{result2}");
+                combatLog.Add($"  {attacker.Name} wounds: {attacker.Wounds}");
+                attacker.OnPropertyChanged(nameof(Character.Wounds));
+                attacker.OnPropertyChanged(nameof(Character.Exhaustion));
+                combatLog.Add("");
+                StateHasChanged();
+            }
 
             if (attacker.IsDead || defender.IsDead || i > 40)
             {
