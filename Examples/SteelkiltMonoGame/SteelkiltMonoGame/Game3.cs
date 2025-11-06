@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using SteelkiltSharp.Core;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SteelkiltMonoGame
 {
@@ -307,29 +308,43 @@ namespace SteelkiltMonoGame
             _spriteBatch.Draw(rect, new Rectangle(x, y, width, height), color);
         }
 
-        private void ExecuteCombatRounds()
+        private async Task ExecuteCombatRounds()
         {
+            if (_characters == null || _characters.Count < 2) return;
+
             _isExecuting = true;
             _combatLog.Clear();
-            _combatLogScrollPosition = 0;
 
             var combatant1 = _characters[0];
             var combatant2 = _characters[1];
 
-            var d10Roll1 = Dice.D10();
-            var d10Roll2 = Dice.D10();
-            bool coinFlip = d10Roll1 + combatant1.Attributes.Dexterity > d10Roll2 + combatant2.Attributes.Dexterity;
-            Character attacker = coinFlip ? combatant1 : combatant2;
-            Character defender = attacker == combatant1 ? combatant2 : combatant1;
-
             int i = 0;
             while (true)
             {
-                var result = Combat.CombatRound(attacker, defender, DefenseAction.Parry);
                 _combatLog.Add($"Round {++i}:");
-                _combatLog.Add($"{result}");
+
+                var d10Roll1 = Dice.D10();
+                var d10Roll2 = Dice.D10();
+                bool coinFlip = d10Roll1 + combatant1.Attributes.Dexterity > d10Roll2 + combatant2.Attributes.Dexterity;
+                Character attacker = coinFlip ? combatant1 : combatant2;
+                Character defender = attacker == combatant1 ? combatant2 : combatant1;
+
+                var result1 = Combat.CombatRound(attacker, defender, DefenseAction.Parry);
+                _combatLog.Add($"{result1}");
                 _combatLog.Add($"  {defender.Name} wounds: {defender.Wounds}");
+                defender.OnPropertyChanged(nameof(Character.Wounds));
+                defender.OnPropertyChanged(nameof(Character.Exhaustion));
                 _combatLog.Add("");
+
+                if (!defender.IsDead)
+                {
+                    var result2 = Combat.CombatRound(defender, attacker, DefenseAction.Parry);
+                    _combatLog.Add($"{result2}");
+                    _combatLog.Add($"  {attacker.Name} wounds: {attacker.Wounds}");
+                    attacker.OnPropertyChanged(nameof(Character.Wounds));
+                    attacker.OnPropertyChanged(nameof(Character.Exhaustion));
+                    _combatLog.Add("");
+                }
 
                 if (attacker.IsDead || defender.IsDead || i > 40)
                 {
@@ -340,120 +355,16 @@ namespace SteelkiltMonoGame
                         _combatLog.Add($"{defender.Name} has been defeated!");
                     else
                         _combatLog.Add("Combat reached round limit.");
+
                     break;
                 }
+
+                await Task.Delay(1000);
             }
 
             _isExecuting = false;
             _canReset = true;
         }
-
-        //private void ExecuteCombatRounds()
-        //{
-        //    _isExecuting = true;
-        //    _combatLog.Clear();
-        //    _combatLogScrollPosition = 0;
-
-        //    if (_characters.Count < 2)
-        //    {
-        //        _combatLog.Add("Error: Need at least 2 characters for combat.");
-        //        _isExecuting = false;
-        //        return;
-        //    }
-
-        //    Character combatant1 = _characters[0];
-        //    Character combatant2 = _characters[1];
-
-        //    _combatLog.Add("=== COMBAT BEGINS ===");
-        //    _combatLog.Add($"{combatant1.Name} vs {combatant2.Name}");
-        //    _combatLog.Add("");
-
-        //    Random rng = new Random();
-        //    int round = 1;
-
-        //    while (round <= 40 && !combatant1.IsDead && !combatant2.IsDead)
-        //    {
-        //        _combatLog.Add($"--- Round {round} ---");
-
-        //        int initiative1 = rng.Next(1, 11) + combatant1.Attributes.Dexterity;
-        //        int initiative2 = rng.Next(1, 11) + combatant2.Attributes.Dexterity;
-
-        //        Character attacker = initiative1 >= initiative2 ? combatant1 : combatant2;
-        //        Character defender = attacker == combatant1 ? combatant2 : combatant1;
-
-        //        _combatLog.Add($"{attacker.Name} (Init: {(attacker == combatant1 ? initiative1 : initiative2)}) attacks first");
-
-        //        int attackRoll = rng.Next(1, 11) + attacker.WeaponSkill;
-        //        int defenseRoll = rng.Next(1, 11) + defender.DodgeSkill;
-
-        //        _combatLog.Add($"  {attacker.Name} rolls: {attackRoll} vs {defender.Name} rolls: {defenseRoll}");
-
-        //        if (attackRoll > defenseRoll)
-        //        {
-        //            int baseDamage = attacker.Weapon.Impact switch
-        //            {
-        //                WeaponImpact.Small => rng.Next(1, 4),
-        //                WeaponImpact.Medium => rng.Next(2, 6),
-        //                WeaponImpact.Large => rng.Next(3, 8),
-        //                _ => 1
-        //            };
-
-        //            int damage = Math.Max(0, baseDamage - defender.Armor.Protection / 2);
-
-        //            if (damage > 0)
-        //            {
-        //                WoundLevel woundLevel = damage switch
-        //                {
-        //                    1 => WoundLevel.Light,
-        //                    2 => WoundLevel.Severe,
-        //                    _ => WoundLevel.Critical
-        //                };
-
-        //                defender.Wounds.AddWound(woundLevel);
-        //                _combatLog.Add($"  HIT! {woundLevel} wound dealt ({damage} damage)");
-
-        //                if (defender.Wounds.Critical > 0)
-        //                {
-        //                    defender.IsDead = true;
-        //                    _combatLog.Add($"  ** {defender.Name} has been DEFEATED! **");
-        //                }
-        //            }
-        //            else
-        //            {
-        //                _combatLog.Add($"  HIT but armor absorbed all damage!");
-        //            }
-        //        }
-        //        else
-        //        {
-        //            _combatLog.Add($"  MISS! {defender.Name} dodges the attack!");
-        //        }
-
-        //        _combatLog.Add($"  {combatant1.Name} Wounds: {combatant1.Wounds}");
-        //        _combatLog.Add($"  {combatant2.Name} Wounds: {combatant2.Wounds}");
-        //        _combatLog.Add("");
-
-        //        if (combatant1.IsDead || combatant2.IsDead)
-        //        {
-        //            _combatLog.Add("=== COMBAT ENDED ===");
-        //            if (combatant1.IsDead)
-        //                _combatLog.Add($"{combatant2.Name} WINS!");
-        //            else
-        //                _combatLog.Add($"{combatant1.Name} WINS!");
-        //            break;
-        //        }
-
-        //        round++;
-        //    }
-
-        //    if (round > 40)
-        //    {
-        //        _combatLog.Add("=== Combat reached round limit ===");
-        //        _combatLog.Add("Both fighters are still standing!");
-        //    }
-
-        //    _isExecuting = false;
-        //    _canReset = true;
-        //}
 
         private void ResetCombat()
         {
@@ -463,138 +374,4 @@ namespace SteelkiltMonoGame
             _combatLogScrollPosition = 0;
         }
     }
-
-    //public class Character
-    //{
-    //    public string Name { get; set; }
-    //    public Attributes Attributes { get; set; }
-    //    public int WeaponSkill { get; set; }
-    //    public int DodgeSkill { get; set; }
-    //    public Weapon Weapon { get; set; }
-    //    public Armor Armor { get; set; }
-    //    public Wounds Wounds { get; set; }
-    //    public bool IsDead { get; set; }
-
-    //    public Character(string name, Attributes attributes, int weaponSkill, int dodgeSkill, Weapon weapon, Armor armor)
-    //    {
-    //        Name = name;
-    //        Attributes = attributes;
-    //        WeaponSkill = weaponSkill;
-    //        DodgeSkill = dodgeSkill;
-    //        Weapon = weapon;
-    //        Armor = armor;
-    //        Wounds = new Wounds();
-    //        IsDead = false;
-    //    }
-
-    //    public override string ToString() => $"{Name} - {Wounds}";
-    //}
-
-    //public class Attributes
-    //{
-    //    public int Strength { get; set; }
-    //    public int Dexterity { get; set; }
-    //    public int Constitution { get; set; }
-    //    public int Reason { get; set; }
-    //    public int Intuition { get; set; }
-    //    public int Willpower { get; set; }
-    //    public int Charisma { get; set; }
-    //    public int Perception { get; set; }
-    //    public int Empathy { get; set; }
-
-    //    public Attributes(int str, int dex, int con, int rea, int itu, int wil, int cha, int per, int emp)
-    //    {
-    //        Strength = str;
-    //        Dexterity = dex;
-    //        Constitution = con;
-    //        Reason = rea;
-    //        Intuition = itu;
-    //        Willpower = wil;
-    //        Charisma = cha;
-    //        Perception = per;
-    //        Empathy = emp;
-    //    }
-    //}
-
-    //public class Weapon
-    //{
-    //    public string Name { get; set; }
-    //    public WeaponImpact Impact { get; set; }
-
-    //    public Weapon(string name, WeaponImpact impact)
-    //    {
-    //        Name = name;
-    //        Impact = impact;
-    //    }
-    //}
-
-    //public enum WeaponImpact
-    //{
-    //    Low,
-    //    Medium,
-    //    High
-    //}
-
-    //public class Armor
-    //{
-    //    public string Name { get; set; }
-    //    public ArmorType ArmorType { get; set; }
-    //    public int Protection { get; set; }
-    //    public int MovementPenalty { get; set; }
-
-    //    public Armor(string name, ArmorType armorType, int protection, int movementPenalty)
-    //    {
-    //        Name = name;
-    //        ArmorType = armorType;
-    //        Protection = protection;
-    //        MovementPenalty = movementPenalty;
-    //    }
-    //}
-
-    //public enum ArmorType
-    //{
-    //    None,
-    //    Leather,
-    //    ChainMail,
-    //    FullPlate
-    //}
-
-    //public class Wounds
-    //{
-    //    public int Light { get; set; }
-    //    public int Severe { get; set; }
-    //    public int Critical { get; set; }
-
-    //    public Wounds()
-    //    {
-    //        Light = 0;
-    //        Severe = 0;
-    //        Critical = 0;
-    //    }
-
-    //    public void AddWound(WoundLevel level)
-    //    {
-    //        switch (level)
-    //        {
-    //            case WoundLevel.Light:
-    //                Light++;
-    //                break;
-    //            case WoundLevel.Severe:
-    //                Severe++;
-    //                break;
-    //            case WoundLevel.Critical:
-    //                Critical++;
-    //                break;
-    //        }
-    //    }
-
-    //    public override string ToString() => $"L:{Light} S:{Severe} C:{Critical}";
-    //}
-
-    //public enum WoundLevel
-    //{
-    //    Light,
-    //    Severe,
-    //    Critical
-    //}
 }
