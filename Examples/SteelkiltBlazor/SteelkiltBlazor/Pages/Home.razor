@@ -1,0 +1,379 @@
+@page "/"
+@using System.Text.Json
+@using SteelkiltSharp.Core
+@using SteelkiltSharp.Modules
+@inject HttpClient Http
+@inject IJSRuntime JS
+
+<PageTitle>Steelkilt Sharp - Character Viewer</PageTitle>
+
+<div class="container-fluid mt-4">
+    <h1 class="mb-4">Steelkilt Sharp Combat System</h1>
+
+    @if (characters == null)
+    {
+        <div class="alert alert-info">
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            Loading characters...
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-sm-4 mb-4">
+                <button class="btn btn-danger btn-lg" @onclick="ExecuteCombatRounds" disabled="@isExecuting">
+                    @if (isExecuting)
+                    {
+                        <span class="me-2" role="status" aria-hidden="true"> Combat in Progress...</span>
+
+                    }
+                    else
+                    {
+                        <span>Execute Combat Rounds</span>
+                    }
+                </button>
+                @if (combatLog.Count > 0)
+                {
+                    <h4>Combat Log</h4>
+                    <pre class="card p-3" @ref="combatLogElement" style="max-height: 500px; overflow-y: auto; background-color: #1e1e1e; color: #00ff00; font-family: 'Courier New', monospace; white-space: pre-wrap; word-wrap: break-word; line-height: 1.5;">@string.Join("\n", combatLog)</pre>
+                }
+                @if (canReset)
+                {
+                    <button class="btn btn-secondary btn-lg" @onclick="Init" disabled="@isExecuting">
+                        Reset
+                    </button>
+                }
+            </div>
+
+            
+            @foreach (var character in characters)
+            {
+                <div class="col-sm-4 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="card-title mb-0">@character.Name</h3>
+                        </div>
+                        <div class="card-body">
+                            <!-- Wounds Section -->
+                            <div class="mb-4">
+                                <h5 class="fw-bold">Wounds</h5>
+                                <div class="row">
+                                    <div class="col">
+                                        <p class="mb-2">
+                                            <strong>Light:</strong> <span class="badge bg-info">@character.Wounds.Light</span>
+                                        </p>
+                                    </div>
+                                    <div class="col">
+                                        <p class="mb-2">
+                                            <strong>Severe:</strong> <span class="badge bg-warning">@character.Wounds.Severe</span>
+                                        </p>
+                                    </div>
+                                    <div class="col">
+                                        <p class="mb-2">
+                                            <strong>Critical:</strong> <span class="badge bg-danger">@character.Wounds.Critical</span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <p class="mt-2 mb-0">
+                                    <strong>Status:</strong>
+                                    @if (character.IsDead)
+                                    {
+                                        <span class="badge bg-dark">DEAD</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success">ALIVE</span>
+                                    }
+                                </p>
+                            </div>
+                            <!-- Attributes Section -->
+                            <div class="mb-4">
+                                <h5 class="fw-bold">Attributes</h5>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="mb-2">
+                                            <label class="form-label">Strength: <strong>@character.Attributes.Strength</strong></label>
+                                            <input type="range" class="form-range" min="1" max="10" 
+                                                   @bind="character.Attributes.Strength" />
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label">Dexterity: <strong>@character.Attributes.Dexterity</strong></label>
+                                            <input type="range" class="form-range" min="1" max="10" 
+                                                   @bind="character.Attributes.Dexterity" />
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label">Constitution: <strong>@character.Attributes.Constitution</strong></label>
+                                            <input type="range" class="form-range" min="1" max="10" 
+                                                   @bind="character.Attributes.Constitution" />
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label">Reason: <strong>@character.Attributes.Reason</strong></label>
+                                            <input type="range" class="form-range" min="1" max="10" 
+                                                   @bind="character.Attributes.Reason" />
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label">Intuition: <strong>@character.Attributes.Intuition</strong></label>
+                                            <input type="range" class="form-range" min="1" max="10" 
+                                                   @bind="character.Attributes.Intuition" />
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="mb-2">
+                                            <label class="form-label">Willpower: <strong>@character.Attributes.Willpower</strong></label>
+                                            <input type="range" class="form-range" min="1" max="10" 
+                                                   @bind="character.Attributes.Willpower" />
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label">Charisma: <strong>@character.Attributes.Charisma</strong></label>
+                                            <input type="range" class="form-range" min="1" max="10" 
+                                                   @bind="character.Attributes.Charisma" />
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label">Perception: <strong>@character.Attributes.Perception</strong></label>
+                                            <input type="range" class="form-range" min="1" max="10" 
+                                                   @bind="character.Attributes.Perception" />
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label">Empathy: <strong>@character.Attributes.Empathy</strong></label>
+                                            <input type="range" class="form-range" min="1" max="10" 
+                                                   @bind="character.Attributes.Empathy" />
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label">Stamina: <strong>@character.Attributes.Stamina</strong></label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Skills Section -->
+                            <div class="mb-4">
+                                <h5 class="fw-bold">Combat Skills</h5>
+                                <div class="mb-2">
+                                    <label class="form-label">Weapon Skill: <strong>@character.WeaponSkill</strong></label>
+                                    <input type="range" class="form-range" min="0" max="10" 
+                                           @bind="character.WeaponSkill" />
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Dodge Skill: <strong>@character.DodgeSkill</strong></label>
+                                    <input type="range" class="form-range" min="0" max="10" 
+                                           @bind="character.DodgeSkill" />
+                                </div>
+                            </div>
+
+                            <!-- Weapon Section -->
+                            <div class="mb-4">
+                                <h5 class="fw-bold">Weapon</h5>
+                                <p class="mb-2">
+                                    <strong>Name:</strong> @character.Weapon.Name
+                                </p>
+                                <p class="mb-2">
+                                    <strong>Impact:</strong> @character.Weapon.Impact
+                                </p>
+                                <p class="mb-2">
+                                    <strong>Damage:</strong> @character.Weapon.Damage
+                                </p>
+                            </div>
+
+                            <!-- Armor Section -->
+                            <div class="mb-4">
+                                <h5 class="fw-bold">Armor</h5>
+                                <p class="mb-2">
+                                    <strong>Name:</strong> @character.Armor.Name
+                                </p>
+                                <p class="mb-2">
+                                    <strong>Type:</strong> @character.Armor.ArmorType
+                                </p>
+                                <p class="mb-2">
+                                    <strong>Protection:</strong> @character.Armor.Protection
+                                </p>
+                                <p class="mb-2">
+                                    <strong>Movement Penalty:</strong> @character.Armor.MovementPenalty
+                                </p>
+                            </div>
+                            <!-- Exhaustion Section -->
+                            <div class="mb-4">
+                                <h5 class="fw-bold">Exhaustion</h5>
+                                <div class="mb-2">
+                                    <label class="form-label">Level: <strong>@character.Exhaustion</strong></label>
+                                    <input type="range" class="form-range" min="0" max="20" 
+                                           @bind="character.Exhaustion" />
+                                </div>
+                            </div>
+                            <!-- Bonus Stats Section -->
+                            <div class="alert alert-light">
+                                <h6 class="fw-bold">Calculated Stats</h6>
+                                <p class="mb-2">
+                                    <strong>Strength Bonus:</strong> <span class="badge bg-secondary">@(character.StrengthBonus > 0 ? "+" : "")@character.StrengthBonus</span>
+                                </p>
+                                <p class="mb-0">
+                                    <strong>Is Dead:</strong> <span class="badge bg-secondary">@character.IsDead</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+
+    private List<Character>? characters;
+    private List<string> combatLog = new();
+    private bool isExecuting = false;
+    private bool canReset = false;
+
+    private async Task ExecuteCombatRounds()
+    {
+        if (characters == null || characters.Count < 2) return;
+
+        isExecuting = true;
+        combatLog.Clear();
+
+        var combatant1 = characters[0];
+        var combatant2 = characters[1];
+
+        int i = 0;
+        while (true)
+        {
+            var d10Roll1 = Dice.D10();
+            var d10Roll2 = Dice.D10();
+            bool coinFlip = d10Roll1 + combatant1.Attributes.Dexterity > d10Roll2 + combatant2.Attributes.Dexterity;
+            Character attacker = coinFlip ? combatant1 : combatant2;
+            Character defender = attacker == combatant1 ? combatant2 : combatant1;
+
+
+            var result = Combat.CombatRound(attacker, defender, DefenseAction.Parry);
+            combatLog.Add($"Round {++i}:");
+            combatLog.Add($"{result}");
+            combatLog.Add($"  {defender.Name} wounds: {defender.Wounds}");
+            combatLog.Add("");
+
+            // Force Blazor to recognize wounds changed
+            attacker.OnPropertyChanged(nameof(Character.Wounds));
+            defender.OnPropertyChanged(nameof(Character.Wounds));
+
+            attacker.OnPropertyChanged(nameof(Character.Exhaustion));
+            defender.OnPropertyChanged(nameof(Character.Exhaustion));
+
+            StateHasChanged();
+
+            if (attacker.IsDead || defender.IsDead || i > 40)
+            {
+                combatLog.Add("=== Combat ended ===");
+                if (attacker.IsDead)
+                    combatLog.Add($"{attacker.Name} has been defeated!");
+                else if (defender.IsDead)
+                    combatLog.Add($"{defender.Name} has been defeated!");
+                else
+                    combatLog.Add("Combat reached round limit.");
+
+                break;
+            }
+
+            await Task.Delay(1000);
+        }
+
+        isExecuting = false;
+        canReset = true;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await Init();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading characters: {ex.Message}");
+        }
+    }
+
+    private async Task Init()
+    {
+        characters = new List<Character>();
+
+        // Load Elara Sunblade
+        var elaraJson = await Http.GetStringAsync("elara_sunblade.json");
+        var elaraData = JsonSerializer.Deserialize<JsonElement>(elaraJson);
+        var elara = DeserializeCharacter(elaraData);
+        characters.Add(elara);
+
+        // Load Aldric the Bold
+        var aldricJson = await Http.GetStringAsync("aldric_the_bold.json");
+        var aldricData = JsonSerializer.Deserialize<JsonElement>(aldricJson);
+        var aldric = DeserializeCharacter(aldricData);
+        characters.Add(aldric);
+
+        combatLog.Clear();
+
+        canReset = false;
+    }
+
+    private Character DeserializeCharacter(JsonElement data)
+    {
+        var name = data.GetProperty("name").GetString();
+        
+        var attrObj = data.GetProperty("attributes");
+        var attributes = new Attributes(
+            strength: attrObj.GetProperty("strength").GetInt32(),
+            dexterity: attrObj.GetProperty("dexterity").GetInt32(),
+            constitution: attrObj.GetProperty("constitution").GetInt32(),
+            reason: attrObj.GetProperty("reason").GetInt32(),
+            intuition: attrObj.GetProperty("intuition").GetInt32(),
+            willpower: attrObj.GetProperty("willpower").GetInt32(),
+            charisma: attrObj.GetProperty("charisma").GetInt32(),
+            perception: attrObj.GetProperty("perception").GetInt32(),
+            empathy: attrObj.GetProperty("empathy").GetInt32()
+        );
+
+        var weaponSkill = data.GetProperty("weapon_skill").GetInt32();
+        var dodgeSkill = data.GetProperty("dodge_skill").GetInt32();
+
+        var weaponObj = data.GetProperty("weapon");
+        var impactStr = weaponObj.GetProperty("impact").GetString();
+        var impact = Enum.Parse<WeaponImpact>(impactStr);
+        var weapon = new Weapon(weaponObj.GetProperty("name").GetString(), impact);
+
+        var armorObj = data.GetProperty("armor");
+        var armorTypeStr = armorObj.GetProperty("armor_type").GetString();
+        var armorType = Enum.Parse<ArmorType>(armorTypeStr);
+        var armor = new Armor(
+            name: armorObj.GetProperty("name").GetString(),
+            armorType: armorType,
+            protection: armorObj.GetProperty("protection").GetInt32(),
+            movementPenalty: armorObj.GetProperty("movement_penalty").GetInt32()
+        );
+
+        var character = new Character(name, attributes, weaponSkill, dodgeSkill, weapon, armor);
+
+        // Load wounds if present
+        if (data.TryGetProperty("wounds", out var woundsObj))
+        {
+            var light = woundsObj.GetProperty("light").GetInt32();
+            var severe = woundsObj.GetProperty("severe").GetInt32();
+            var critical = woundsObj.GetProperty("critical").GetInt32();
+
+            // Recreate wounds state
+            for (int i = 0; i < light; i++)
+                character.Wounds.AddWound(WoundLevel.Light);
+            for (int i = 0; i < severe; i++)
+                character.Wounds.AddWound(WoundLevel.Severe);
+            for (int i = 0; i < critical; i++)
+                character.Wounds.AddWound(WoundLevel.Critical);
+        }
+
+        return character;
+    }
+}
+
+@code {
+    private ElementReference combatLogElement;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JS.InvokeVoidAsync("scrollToBottom", combatLogElement);
+    }
+}
